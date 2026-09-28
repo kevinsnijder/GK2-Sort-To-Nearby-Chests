@@ -1,3 +1,6 @@
+## ⚠️ AI DISCLAIMER: This project is a vibecoded project.
+I have not doublechecked every line of code in this repository.
+
 # GK2 Sort To Nearby Chests
 
 A BepInEx 5 mod for **Graveyard Keeper 2** that adds a **Sort to nearby chests** button to the inventory screen. One click puts your items into the chests around you that already hold the same items.
