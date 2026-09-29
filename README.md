@@ -5,7 +5,7 @@ I have not doublechecked every line of code in this repository.
 
 <img src="workshop/preview.png" alt="Sort to nearby chests" width="160" align="right">
 
-**Download:** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3809824680) · [Nexus Mods](https://www.nexusmods.com/graveyardkeeper2/mods/220)
+**Links:** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3809824680) · [Nexus Mods](https://www.nexusmods.com/graveyardkeeper2/mods/220) · [Source code](https://github.com/kevinsnijder/GK2-Sort-To-Nearby-Chests)
 
 A BepInEx 5 mod for **Graveyard Keeper 2** that adds a **Sort to nearby chests** button to the inventory screen. One click puts your items into the chests around you that already hold the same items.
 

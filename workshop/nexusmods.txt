@@ -73,9 +73,12 @@ Graveyard Keeper 2
 [size=4][b]Uninstall[/b][/size]
 Delete [i]BepInEx\plugins\GK2SortToNearbyChests[/i].
 
-[size=4][b]Source code[/b][/size]
-The full source is on GitHub:
-[url=https://github.com/kevinsnijder/GK2-Sort-To-Nearby-Chests]github.com/kevinsnijder/GK2-Sort-To-Nearby-Chests[/url]
+[size=4][b]Links[/b][/size]
+[list]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3809824680]Steam Workshop page[/url][/*]
+[*][url=https://github.com/kevinsnijder/GK2-Sort-To-Nearby-Chests]Source code on GitHub[/url][/*]
+[/list]
+Please report problems in the comments; attach [i]BepInEx\LogOutput.log[/i] if you can.
 
 [size=4][b]Changelog[/b][/size]
 [b]v1.0.1[/b]: sort an open bag (only that bag); fixed the controller tip bar jumping (moving between items, opening a bag) and the LT prompt showing twice next to No More Running Back; holding LT sorts once; fixed controller focus after switching from mouse
