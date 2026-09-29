@@ -22,15 +22,18 @@ namespace GK2SortToNearbyChests
 		private static readonly AccessTools.FieldRef<LazyButtonTipsStr, TextMeshProUGUI> LabelRef =
 			AccessTools.FieldRefAccess<LazyButtonTipsStr, TextMeshProUGUI>("label");
 
+		private static readonly GameKeyIconType[] ICON_TYPES = { GameKeyIconType.Default, GameKeyIconType.Inactive };
+
 		private static CharacterWindow window;
 		private static CharMainPageWidget page;
-		private static string appended;
 		private static bool subscribed;
+		private static string lastWritten;
 
 		private static bool notepadResolved;
 		private static FieldInfo notepadInstance;
 		private static FieldInfo notepadLabel;
 		private static FieldInfo notepadWritten;
+		private static MethodInfo notepadUpdate;
 
 		internal static void Track(CharMainPageWidget mainPage)
 		{
@@ -70,46 +73,105 @@ namespace GK2SortToNearbyChests
 				return;
 			}
 
-			var text = label.text ?? string.Empty;
-			var original = text;
-			if (appended != null && text.EndsWith(appended, StringComparison.Ordinal))
+			if (label.text != lastWritten)
 			{
-				text = text.Substring(0, text.Length - appended.Length);
+				UpdateNotepadNow();
 			}
-
-			var wanted = ShouldShow() ? Prompt(text.Length > 0) : null;
-			var result = wanted == null ? text : text + wanted;
-			appended = wanted;
+			var original = label.text ?? string.Empty;
+			var text = RemovePrompts(original);
+			var wanted = ShouldShow() ? Prompt(CurrentIconType()) : null;
+			var result = wanted == null ? text : text + (text.Length > 0 ? SEPARATOR : string.Empty) + wanted;
+			lastWritten = result;
 			if (result == original)
 			{
 				return;
 			}
 			label.text = result;
 			SyncNotepad(label, original, result);
+			RedrawNow();
+		}
+
+		/// <summary>
+		/// Removes this prompt wherever it is. When the game rewrites the tip bar outside its input update (an inventory
+		/// redraw, for example), the prompt is added before No More Running Back adds its own prompts after the text, so it
+		/// can end up in the middle.
+		/// </summary>
+		private static string RemovePrompts(string text)
+		{
+			foreach (var iconType in ICON_TYPES)
+			{
+				var prompt = Prompt(iconType);
+				if (prompt == null || text.IndexOf(prompt, StringComparison.Ordinal) < 0)
+				{
+					continue;
+				}
+				text = text.Replace(SEPARATOR + prompt, string.Empty).Replace(prompt + SEPARATOR, string.Empty).Replace(prompt, string.Empty);
+			}
+			return text;
+		}
+
+		/// <summary>
+		/// The canvases may already be rebuilt this frame with the old text; without this the bar is drawn one frame without
+		/// the prompt. The rebuild raises the render event again, which finds the text unchanged and returns.
+		/// </summary>
+		private static void RedrawNow()
+		{
+			Canvas.ForceUpdateCanvases();
 		}
 
 		private static bool ShouldShow()
 		{
 			return LazyInput.IsGamepadActive && window.IsShownAndTop && window.LastOpenedPage == CharacterWindowData.CharPage.Main
-				&& page.isActiveAndEnabled && !page.IsBagModeEnabled();
+				&& page.isActiveAndEnabled;
 		}
 
-		private static string Prompt(bool withSeparator)
+		private static GameKeyIconType CurrentIconType()
 		{
 			var view = SortButtonView.Find(page);
-			var iconType = view != null && view.CanSort ? GameKeyIconType.Default : GameKeyIconType.Inactive;
+			return view != null && view.CanSort ? GameKeyIconType.Default : GameKeyIconType.Inactive;
+		}
+
+		private static string Prompt(GameKeyIconType iconType)
+		{
 			var icon = ControllerIconLibrary.GetIconId(CharacterWindowKeysPatch.SortKey, iconType, trailingSpace: false);
 			if (string.IsNullOrEmpty(icon))
 			{
 				return null;
 			}
-			return (withSeparator ? SEPARATOR : string.Empty) + icon + Texts.Button;
+			return icon + Texts.Button;
+		}
+
+		/// <summary>
+		/// The game sometimes rewrites the tip bar after No More Running Back added its prompts for the frame (opening a bag,
+		/// for example). That mod would add them one frame later, in front of this prompt, so the bar jumps. Its own tip update
+		/// is run now instead; it does nothing when its prompts are already there.
+		/// </summary>
+		private static void UpdateNotepadNow()
+		{
+			if (!ResolveNotepad() || notepadUpdate == null)
+			{
+				return;
+			}
+			var injector = notepadInstance.GetValue(null) as Behaviour;
+			if (injector == null || !injector.isActiveAndEnabled)
+			{
+				return;
+			}
+			try
+			{
+				notepadUpdate.Invoke(injector, null);
+			}
+			catch (Exception ex)
+			{
+				notepadUpdate = null;
+				Plugin.Log.LogWarning($"Could not update No More Running Back's prompts: {ex.InnerException?.Message ?? ex.Message}");
+			}
 		}
 
 		/// <summary>
 		/// The "No More Running Back" Workshop mod (GK2Notepad) adds its own prompts and remembers the text it wrote; if the
 		/// text changed, it adds them again. Its copy is updated to include this prompt, so they are not repeated. Does nothing
-		/// without that mod. It switches itself off when its code is patched, so its fields are only read and written.
+		/// without that mod. It switches itself off when its code is patched, so it is only read, written and called.
 		/// </summary>
 		private static void SyncNotepad(TextMeshProUGUI label, string before, string after)
 		{
@@ -147,6 +209,7 @@ namespace GK2SortToNearbyChests
 				notepadInstance = type?.GetField("instance", BindingFlags.Static | BindingFlags.NonPublic);
 				notepadLabel = type?.GetField("tipsLabel", INSTANCE);
 				notepadWritten = type?.GetField("tipsWritten", INSTANCE);
+				notepadUpdate = type?.GetMethod("UpdateTips", INSTANCE, null, Type.EmptyTypes, null);
 				if (notepadInstance == null || notepadLabel == null || notepadWritten?.FieldType != typeof(string))
 				{
 					notepadWritten = null;

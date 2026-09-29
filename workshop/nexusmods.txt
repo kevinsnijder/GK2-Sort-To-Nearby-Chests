@@ -1,0 +1,82 @@
+Tired of emptying your bag chest by chest?
+One click puts your items into the chests around you that already hold the same items.
+
+[size=4][b]Features[/b][/size]
+[list]
+[*][b]One-click sorting[/b] from the inventory screen (Character tab), with mouse or controller[/*]
+[*][b]Items go where they belong:[/b] into chests that already contain that item, or into storages made for it (like firewood
+sheds)[/*]
+[*][b]Keeps what you need:[/b] tools, hotbar items, the seed in your hand, faith, bags and quest items stay with you[/*]
+[*][b]Sort a bag:[/b] open a bag and sort, and only that bag's contents go into the chests[/*]
+[*][b]Works like the game:[/b] the button looks and behaves like the game's own move-all button, and items are moved the same way the
+chest window moves them[/*]
+[*][b]Translated[/b] into all the game's languages[/*]
+[/list]
+
+[size=4][b]How to use[/b][/size]
+[list]
+[*][b]Mouse:[/b] click the button on the right of the Inventory header (with a bag open: on the bag's header)[/*]
+[*][b]Controller:[/b] press [b]LT[/b] on the Character page; the prompt is shown at the end of the tip bar[/*]
+[/list]
+The button turns grey when there is nothing to sort or no chest nearby.
+With a bag open, only that bag is sorted. Otherwise only your inventory is sorted and bags keep their contents.
+
+[size=4][b]What gets sorted[/b][/size]
+[list]
+[*]Inside a storage area (home, kitchen, yard...): that area's storages, the same ones the inventory screen lists[/*]
+[*]Outside an area: storages within 10 units (adjustable)[/*]
+[*]Items go to chests that already contain them (the one holding the most first), then to storages made for them[/*]
+[*]Items no nearby chest contains yet stay with you, and so does whatever doesn't fit. Turn on [i]OverflowToOtherChests[/i] to put them
+into any nearby chest with room[/*]
+[*]Conveyor chests and pallets are skipped by default, because production lines take items from them[/*]
+[*]Unstackable items keep their durability and bag contents[/*]
+[/list]
+
+[size=4][b]Compatibility[/b][/size]
+[list]
+[*]Tested with [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3806668942]No More Running Back[/url], GK2 Performance,
+Better Auto Crafting and GK2 Move Stations[/*]
+[*]No More Running Back is optional; with it installed, its controller prompts stay as they are[/*]
+[/list]
+
+[size=4][b]Safe to use[/b][/size]
+[list]
+[*]Adds no data of its own to save files; add or remove it at any time[/*]
+[*]If a game update breaks something, the mod switches itself off and the game runs as normal[/*]
+[/list]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://github.com/BepInEx/BepInEx/releases/latest]BepInEx 5[/url][/*]
+[*]No other mods needed[/*]
+[/list]
+
+[size=4][b]Installation[/b][/size]
+Download the file, open the zip and copy its [i]BepInEx[/i] folder into the game folder (Steam Library → right-click Graveyard Keeper 2
+→ Manage → Browse local files); merge the folders.
+
+Game folder after installing:
+[code]
+Graveyard Keeper 2
+└─ BepInEx
+    └─ plugins
+        └─ GK2SortToNearbyChests
+            └─ GK2SortToNearbyChests.dll   ← new[/code]
+
+[size=4][b]Configuration[/b][/size]
+[list]
+[*][i]BepInEx\config\gk2.sorttonearbychests.cfg[/i] is created on first start[/*]
+[*]Choose what stays in your inventory, the search radius, overflow and conveyor use[/*]
+[*]Changes apply after restarting the game[/*]
+[/list]
+
+[size=4][b]Uninstall[/b][/size]
+Delete [i]BepInEx\plugins\GK2SortToNearbyChests[/i].
+
+[size=4][b]Source code[/b][/size]
+The full source is on GitHub:
+[url=https://github.com/kevinsnijder/GK2-Sort-To-Nearby-Chests]github.com/kevinsnijder/GK2-Sort-To-Nearby-Chests[/url]
+
+[size=4][b]Changelog[/b][/size]
+[b]v1.0.1[/b]: sort an open bag (only that bag); fixed the controller tip bar jumping (moving between items, opening a bag) and the LT prompt showing twice next to No More Running Back; holding LT sorts once; fixed controller focus after switching from mouse
+[b]v1.0.0[/b]: first release

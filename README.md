@@ -9,6 +9,7 @@ A BepInEx 5 mod for **Graveyard Keeper 2** that adds a **Sort to nearby chests**
 - **One-click sorting** from the inventory screen (Character tab), with mouse or controller
 - **Items go where they belong:** into chests that already contain that item, or into storages made for it (like firewood sheds)
 - **Keeps what you need:** tools, hotbar items, the seed in your hand, faith, bags and quest items stay with you
+- **Sort a bag:** open a bag and sort, and only that bag's contents go into the chests
 - **Works like the game:** the button looks and behaves like the game's own "move all identical items" button, and items are moved the same way the chest window moves them
 - **Translated** into all the game's languages
 
@@ -16,10 +17,12 @@ A BepInEx 5 mod for **Graveyard Keeper 2** that adds a **Sort to nearby chests**
 
 | Input | Action |
 |---|---|
-| Mouse | Click the button on the right of the **Inventory** header |
+| Mouse | Click the button on the right of the **Inventory** header (with a bag open: on the bag's header) |
 | Controller | Press **LT** on the Character page. The prompt appears at the end of the tip bar |
 
-The button turns grey (the LT icon dims) when there is nothing to sort or no chest nearby. The result shows up as a normal game notification. While a bag is open, the button is hidden so the game's own button can show there.
+The button turns grey (the LT icon dims) when there is nothing to sort or no chest nearby. The result shows up as a normal game notification.
+
+**Bags:** with no bag open, only your inventory is sorted and bags keep their contents. With a bag open, only that bag is sorted; the button then sits on the bag's header, next to its close button. LT works the same way.
 
 LT is otherwise unused on the Character page. On the Tech Tree and Inspirations pages it still switches sub-tabs.
 
@@ -38,13 +41,13 @@ Items that no nearby chest contains yet stay in your inventory, and so does what
 - Items pinned to the hotbar (1–4)
 - The seed or fertilizer you're holding to plant
 - Faith, because Inspirations can only be paid with faith you carry
-- Bags and quest items
+- Bags and quest items, and the contents of bags that aren't open
 
 Conveyor chests and pallets are skipped by default, because production lines take items from them. Unstackable items keep their durability and bag contents.
 
 ## Install
 
-Requires [BepInEx 5](https://github.com/BepInEx/BepInEx/releases/latest).
+Requires [BepInEx 5](https://github.com/BepInEx/BepInEx/releases/latest). No other mods needed.
 
 **Steam Workshop:** subscribe. With the GK2 Workshop auto-loader installed, it loads on the next game start.
 
@@ -58,7 +61,7 @@ Requires [BepInEx 5](https://github.com/BepInEx/BepInEx/releases/latest).
          └─ GK2SortToNearbyChests
             └─ GK2SortToNearbyChests.dll
    ```
-2. Start the game. `BepInEx/LogOutput.log` should contain `GK2 Sort To Nearby Chests 1.0.0 loaded.`
+2. Start the game. `BepInEx/LogOutput.log` should contain `GK2 Sort To Nearby Chests 1.0.1 loaded.`
 
 **Uninstall:** delete `BepInEx/plugins/GK2SortToNearbyChests`, and optionally `BepInEx/config/gk2.sorttonearbychests.cfg`.
 
@@ -86,7 +89,19 @@ Requires [BepInEx 5](https://github.com/BepInEx/BepInEx/releases/latest).
 
 Tested with [No More Running Back](https://steamcommunity.com/sharedfiles/filedetails/?id=3806668942) (installs `GK2Notepad.dll`), [GK2 Performance](https://steamcommunity.com/sharedfiles/filedetails/?id=3809616755), Better Auto Crafting and GK2 Move Stations.
 
-No More Running Back is optional. When it's installed, the LT prompt comes after its own prompts, and its record of the tip bar text is kept up to date so its prompts aren't repeated. That mod switches itself off when another mod patches its code, so this mod only reads and sets one of its values.
+No More Running Back is optional. When it's installed, the LT prompt comes after its own prompts, and its record of the tip bar text is kept up to date so its prompts aren't repeated. When the game rewrites the tip bar late in a frame (opening a bag, for example), this mod runs that mod's tip update right away, so the bar doesn't jump a frame later. That mod switches itself off when another mod patches its code, so this mod only reads and sets one of its values and calls its tip update.
+
+## Changelog
+
+**1.0.1**
+- Sort an open bag: with a bag open, only that bag's contents are sorted. Closed bags keep their contents.
+- Fixed the controller tip bar jumping when moving between items or opening a bag, and the LT prompt showing twice next to No More Running Back's prompts.
+- Fixed the controller focus possibly landing on the hidden mouse button after switching from mouse to controller.
+- Holding LT sorts only once.
+- Less work while the inventory is open: whether there is something to sort is only checked when the inventory changes, and every 2 seconds.
+
+**1.0.0**
+- First release.
 
 ## Building
 

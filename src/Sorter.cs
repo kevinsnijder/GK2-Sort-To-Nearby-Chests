@@ -9,30 +9,32 @@ namespace GK2SortToNearbyChests
 		public int LeftCount;
 	}
 
+	/// <summary>An item the sort may move, and the inventory it is taken from: the player's inventory or the open bag.</summary>
+	internal struct SortCandidate
+	{
+		public Item Item;
+		public Inventory From;
+	}
+
 	/// <summary>
-	/// Moves the player's inventory into nearby storages, using the same inventory calls as the chest window.
+	/// Moves the player's inventory, or the bag open on the inventory screen, into nearby storages, using the same
+	/// inventory calls as the chest window. <c>openBag</c> is null when no bag is open.
 	/// </summary>
 	internal static class Sorter
 	{
-		internal static SortResult SortPlayerInventory(PlayerData playerData, List<Inventory> storages)
+		internal static SortResult SortPlayerInventory(PlayerData playerData, Inventory openBag, List<Inventory> storages)
 		{
 			var result = new SortResult { StorageCount = storages.Count };
-			var playerInventory = playerData.inventory;
-			var snapshot = new List<Item>(playerInventory.Data.Inventory);
 
 			UINotificator.isSilent = true;
 			try
 			{
-				foreach (var item in snapshot)
+				foreach (var candidate in Candidates(playerData, openBag))
 				{
-					if (!ShouldMove(playerData, item))
+					result.MovedCount += MoveStack(candidate, storages);
+					if (!IsGone(candidate))
 					{
-						continue;
-					}
-					result.MovedCount += MoveStack(playerInventory, item, storages);
-					if (!item.IsEmpty && playerInventory.Data.Inventory.Contains(item))
-					{
-						result.LeftCount += item.Count;
+						result.LeftCount += candidate.Item.Count;
 					}
 				}
 			}
@@ -49,36 +51,43 @@ namespace GK2SortToNearbyChests
 		}
 
 		/// <summary>True when the inventory holds at least one item the sort would try to move.</summary>
-		internal static bool HasMovableItems(PlayerData playerData)
+		internal static bool HasMovableItems(PlayerData playerData, Inventory openBag)
 		{
-			foreach (var item in playerData.inventory.Data.Inventory)
-			{
-				if (ShouldMove(playerData, item))
-				{
-					return true;
-				}
-			}
-			return false;
+			return Candidates(playerData, openBag).Count > 0;
 		}
 
 		/// <summary>True when sorting would move at least one item into <paramref name="storages"/>. Moves nothing.</summary>
-		internal static bool CanMoveAny(PlayerData playerData, List<Inventory> storages)
+		internal static bool CanMoveAny(PlayerData playerData, Inventory openBag, List<Inventory> storages)
 		{
-			foreach (var item in playerData.inventory.Data.Inventory)
+			foreach (var candidate in Candidates(playerData, openBag))
 			{
-				if (!ShouldMove(playerData, item))
-				{
-					continue;
-				}
 				foreach (var storage in storages)
 				{
-					if (IsTarget(storage, item) && HasRoomFor(storage, item))
+					if (IsTarget(storage, candidate.Item) && HasRoomFor(storage, candidate.Item))
 					{
 						return true;
 					}
 				}
 			}
 			return false;
+		}
+
+		/// <summary>
+		/// The items the sort would try to move: with a bag open only its contents, otherwise only the player's inventory
+		/// (bags keep their contents).
+		/// </summary>
+		private static List<SortCandidate> Candidates(PlayerData playerData, Inventory openBag)
+		{
+			var from = openBag ?? playerData.inventory;
+			var result = new List<SortCandidate>();
+			foreach (var item in from.Data.Inventory)
+			{
+				if (ShouldMove(playerData, item))
+				{
+					result.Add(new SortCandidate { Item = item, From = from });
+				}
+			}
+			return result;
 		}
 
 		/// <summary>Whether sorting may put <paramref name="item"/> into <paramref name="storage"/> at all.</summary>
@@ -160,8 +169,10 @@ namespace GK2SortToNearbyChests
 		/// Moves one stack: first into storages that already hold the item (most first), then into storages made for it,
 		/// then, with overflow on, into any storage with room. Returns the count moved.
 		/// </summary>
-		private static int MoveStack(Inventory from, Item item, List<Inventory> storages)
+		private static int MoveStack(SortCandidate candidate, List<Inventory> storages)
 		{
+			var from = candidate.From;
+			var item = candidate.Item;
 			var moved = 0;
 
 			var holders = new List<KeyValuePair<int, Inventory>>();
@@ -177,7 +188,7 @@ namespace GK2SortToNearbyChests
 			foreach (var holder in holders)
 			{
 				moved += MoveInto(from, item, holder.Value);
-				if (IsGone(from, item))
+				if (IsGone(candidate))
 				{
 					return moved;
 				}
@@ -188,7 +199,7 @@ namespace GK2SortToNearbyChests
 				if (IsMadeFor(storage, item))
 				{
 					moved += MoveInto(from, item, storage);
-					if (IsGone(from, item))
+					if (IsGone(candidate))
 					{
 						return moved;
 					}
@@ -200,7 +211,7 @@ namespace GK2SortToNearbyChests
 				foreach (var storage in storages)
 				{
 					moved += MoveInto(from, item, storage);
-					if (IsGone(from, item))
+					if (IsGone(candidate))
 					{
 						return moved;
 					}
@@ -247,9 +258,9 @@ namespace GK2SortToNearbyChests
 			return added;
 		}
 
-		private static bool IsGone(Inventory from, Item item)
+		private static bool IsGone(SortCandidate candidate)
 		{
-			return item.IsEmpty || !from.Data.Inventory.Contains(item);
+			return candidate.Item.IsEmpty || !candidate.From.Data.Inventory.Contains(candidate.Item);
 		}
 
 		private static int CountTopLevel(Inventory storage, string itemId)

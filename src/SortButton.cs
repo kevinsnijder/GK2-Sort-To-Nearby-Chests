@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using LazyBearTechnology;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,21 +10,33 @@ namespace GK2SortToNearbyChests
 {
 	/// <summary>
 	/// The "Sort to nearby chests" button: a copy of the game's "move all identical items" button on the inventory header.
-	/// Mouse only; with a controller the tip bar shows an LT prompt instead. Hidden while a bag is open.
+	/// Mouse only; with a controller the tip bar shows an LT prompt instead. While a bag is open, its contents are sorted too.
 	/// </summary>
 	internal class SortButtonView : MonoBehaviour
 	{
 		private const string BUTTON_NAME = "SortToNearbyChestsBtn";
 		private const string ICON_SPRITE = "btn_i-put_similar";
-		private const float REFRESH_INTERVAL_SECONDS = 0.25f;
+		private const float REFRESH_INTERVAL_SECONDS = 2f;
+		private const float BAG_HEADER_SHIFT = -26f;
+		private const float BAG_TITLE_MARGIN_LEFT = 34f;
+		private const float BAG_TITLE_MARGIN_RIGHT = 76f;
 
 		private static readonly AccessTools.FieldRef<CharMainPageWidget, MultiInventoryWidget> MultiInventoryRef =
 			AccessTools.FieldRefAccess<CharMainPageWidget, MultiInventoryWidget>("multiInventoryWidget");
+		private static readonly AccessTools.FieldRef<CharMainPageWidget, CharMainPageWidgetData> PageDataRef =
+			AccessTools.FieldRefAccess<CharMainPageWidget, CharMainPageWidgetData>("data");
+		private static readonly AccessTools.FieldRef<CharMainPageWidget, BagInventoryWidget> BagWidgetRef =
+			AccessTools.FieldRefAccess<CharMainPageWidget, BagInventoryWidget>("bagInventoryWidget");
 
 		private CharMainPageWidget page;
 		private LazyButton button;
 		private float refreshTimer;
 		private bool canSort;
+		private Inventory watchedInventory;
+		private Vector2 templatePosition;
+		private TMP_Text squeezedTitle;
+		private Vector4 titleMargin;
+		private TextOverflowModes titleOverflow;
 
 		internal bool CanSort
 		{
@@ -49,6 +62,17 @@ namespace GK2SortToNearbyChests
 			return page != null ? page.GetComponent<SortButtonView>() : null;
 		}
 
+		/// <summary>The bag open on the inventory page, or null.</summary>
+		internal static Inventory OpenBag(CharMainPageWidget page)
+		{
+			var data = page != null ? PageDataRef(page) : null;
+			if (data == null || !data.IsBagShown)
+			{
+				return null;
+			}
+			return data.BagInventoryWidgetData?.Inventory;
+		}
+
 		/// <summary>Takes the button off the pooled inventory header before the page releases it.</summary>
 		internal void Park()
 		{
@@ -62,6 +86,36 @@ namespace GK2SortToNearbyChests
 			}
 			button.gameObject.SetActive(false);
 			button.transform.SetParent(transform, false);
+			RestoreTitle();
+		}
+
+		/// <summary>
+		/// On the bag panel the button sits between the title and the close button, so the title is centered in the space
+		/// left between the bag icon and the buttons. Long names end in "...".
+		/// </summary>
+		private void SqueezeTitle(InventoryHeaderWidget header)
+		{
+			var title = header.transform.Find("Header")?.GetComponent<TMP_Text>();
+			if (title == null)
+			{
+				return;
+			}
+			squeezedTitle = title;
+			titleMargin = title.margin;
+			titleOverflow = title.overflowMode;
+			title.margin = new Vector4(BAG_TITLE_MARGIN_LEFT, titleMargin.y, BAG_TITLE_MARGIN_RIGHT, titleMargin.w);
+			title.overflowMode = TextOverflowModes.Ellipsis;
+		}
+
+		private void RestoreTitle()
+		{
+			if (squeezedTitle == null)
+			{
+				return;
+			}
+			squeezedTitle.margin = titleMargin;
+			squeezedTitle.overflowMode = titleOverflow;
+			squeezedTitle = null;
 		}
 
 		internal void RefreshNow()
@@ -70,15 +124,23 @@ namespace GK2SortToNearbyChests
 			Refresh();
 		}
 
-		/// <summary>Keeps the button on the player's inventory header, shows it for mouse only, and greys it out when there is nothing to sort.</summary>
+		/// <summary>
+		/// Keeps the button on the header of what it sorts (the open bag, else the player's inventory), shows it for mouse
+		/// only, and greys it out when there is nothing to sort.
+		/// </summary>
 		private void LateUpdate()
 		{
 			Refresh();
 		}
 
+		/// <summary>
+		/// Checking whether anything can be sorted walks every nearby storage, so it runs when the sorted inventory changes or
+		/// a bag opens or closes, and otherwise only every <see cref="REFRESH_INTERVAL_SECONDS"/> for chests that change meanwhile.
+		/// </summary>
 		private void Refresh()
 		{
-			var header = FindPlayerHeader();
+			var bag = OpenBag(page);
+			var header = bag != null ? FindBagHeader() : FindPlayerHeader();
 			if (header == null)
 			{
 				Park();
@@ -90,10 +152,19 @@ namespace GK2SortToNearbyChests
 			}
 			if (button.transform.parent != header.transform)
 			{
+				RestoreTitle();
 				button.transform.SetParent(header.transform, false);
 				button.transform.SetAsLastSibling();
+				var rect = (RectTransform)button.transform;
+				rect.anchoredPosition = bag != null ? templatePosition + new Vector2(BAG_HEADER_SHIFT, 0f) : templatePosition;
 			}
 
+			var sorted = bag ?? MainGame.PlayerData?.inventory;
+			if (sorted != watchedInventory)
+			{
+				Watch(sorted);
+				refreshTimer = 0f;
+			}
 			refreshTimer -= Time.unscaledDeltaTime;
 			if (refreshTimer <= 0f)
 			{
@@ -101,7 +172,7 @@ namespace GK2SortToNearbyChests
 				UpdateCanSort();
 			}
 
-			var visible = !LazyInput.IsGamepadActive && !page.IsBagModeEnabled();
+			var visible = !LazyInput.IsGamepadActive;
 			if (button.gameObject.activeSelf != visible)
 			{
 				button.gameObject.SetActive(visible);
@@ -110,17 +181,58 @@ namespace GK2SortToNearbyChests
 					UITooltip.HideImmediately();
 				}
 			}
+			if (visible && bag != null)
+			{
+				if (squeezedTitle == null)
+				{
+					SqueezeTitle(header);
+				}
+			}
+			else
+			{
+				RestoreTitle();
+			}
 			if (button.interactable != canSort)
 			{
 				button.interactable = canSort;
 			}
 		}
 
+		private void Watch(Inventory inventory)
+		{
+			if (watchedInventory == inventory)
+			{
+				return;
+			}
+			if (watchedInventory != null)
+			{
+				watchedInventory.OnItemsAdd -= OnInventoryChanged;
+				watchedInventory.OnItemsRemove -= OnInventoryChanged;
+			}
+			watchedInventory = inventory;
+			if (inventory != null)
+			{
+				inventory.OnItemsAdd += OnInventoryChanged;
+				inventory.OnItemsRemove += OnInventoryChanged;
+			}
+		}
+
+		private void OnInventoryChanged(List<Item> items)
+		{
+			refreshTimer = 0f;
+		}
+
+		private void OnDestroy()
+		{
+			Watch(null);
+		}
+
 		private void UpdateCanSort()
 		{
 			var playerData = MainGame.PlayerData;
+			var bag = OpenBag(page);
 			canSort = playerData != null && MainGame.PlayerController != null
-				&& Sorter.HasMovableItems(playerData) && Sorter.CanMoveAny(playerData, NearbyStorage.Find(playerData));
+				&& Sorter.HasMovableItems(playerData, bag) && Sorter.CanMoveAny(playerData, bag, NearbyStorage.Find(playerData));
 		}
 
 		/// <summary>The header of the player's own inventory: the first inventory drawn on the page.</summary>
@@ -139,6 +251,17 @@ namespace GK2SortToNearbyChests
 			return first.InventoryHeaderWidget;
 		}
 
+		/// <summary>The header of the open bag's panel. The button goes left of the panel's close button.</summary>
+		private InventoryHeaderWidget FindBagHeader()
+		{
+			var bagWidget = BagWidgetRef(page);
+			if (bagWidget == null || !bagWidget.isActiveAndEnabled)
+			{
+				return null;
+			}
+			return bagWidget.InventoryHeaderWidget;
+		}
+
 		private bool CreateButton(InventoryHeaderWidget header)
 		{
 			var template = header.MoveAllSimilarItemsToBagBtn;
@@ -150,6 +273,8 @@ namespace GK2SortToNearbyChests
 			copy.name = BUTTON_NAME;
 			copy.SetActive(false);
 			button = copy.GetComponent<LazyButton>();
+			templatePosition = ((RectTransform)template.transform).anchoredPosition;
+			RemoveControllerNavigation(copy);
 
 			button.onClick.RemoveAllListeners();
 			button.onEnter.RemoveAllListeners();
@@ -166,6 +291,18 @@ namespace GK2SortToNearbyChests
 
 			SetIcon(copy);
 			return true;
+		}
+
+		/// <summary>
+		/// The button is mouse only. The copied template can take controller focus: when the player switches from mouse to
+		/// controller, the game focuses the first target while this copy is still shown, which then hides.
+		/// </summary>
+		private static void RemoveControllerNavigation(GameObject copy)
+		{
+			foreach (var navigationItem in copy.GetComponentsInChildren<GamepadNavigationItem>(true))
+			{
+				DestroyImmediate(navigationItem);
+			}
 		}
 
 		private static void SetIcon(GameObject copy)
@@ -230,13 +367,14 @@ namespace GK2SortToNearbyChests
 				Notify(Texts.NoChests);
 				return;
 			}
-			if (!Sorter.HasMovableItems(playerData))
+			var bag = SortButtonView.OpenBag(page);
+			if (!Sorter.HasMovableItems(playerData, bag))
 			{
 				Notify(Texts.Nothing);
 				return;
 			}
 
-			var result = Sorter.SortPlayerInventory(playerData, storages);
+			var result = Sorter.SortPlayerInventory(playerData, bag, storages);
 			Plugin.Log.LogInfo($"Sorted {result.MovedCount} items into {result.StorageCount} storages, {result.LeftCount} stayed in the inventory.");
 			if (result.MovedCount > 0)
 			{
@@ -286,8 +424,9 @@ namespace GK2SortToNearbyChests
 	}
 
 	/// <summary>
-	/// Controller: LT sorts to nearby chests on the inventory page. The game only uses LT to switch sub-tabs on the
-	/// Tech Tree and Inspirations pages, which keep that behaviour.
+	/// Controller: LT sorts to nearby chests on the inventory page, once per press (a held or drifting trigger would otherwise
+	/// sort again at the game's key-repeat rate). The game only uses LT to switch sub-tabs on the Tech Tree and Inspirations
+	/// pages, which keep that behaviour.
 	/// </summary>
 	[HarmonyPatch(typeof(CharacterWindow), "GetGameKeyDelegates")]
 	internal static class CharacterWindowKeysPatch
@@ -322,10 +461,11 @@ namespace GK2SortToNearbyChests
 				return false;
 			}
 			var page = MainPageRef(window);
-			if (page == null || page.IsBagModeEnabled())
+			if (page == null)
 			{
 				return false;
 			}
+			LazyInput.WaitForRelease(SortKey);
 			SortActions.SortNow(page);
 			return true;
 		}

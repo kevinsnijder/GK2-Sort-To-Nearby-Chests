@@ -2,11 +2,11 @@
 {
 	"appid"		"4358690"
 	"publishedfileid"		"3809824680"
-	"contentfolder"		"C:\Users\kevin\Downloads\Mods\SortToNearbyChests\workshop\content"
-	"previewfile"		"C:\Users\kevin\Downloads\Mods\SortToNearbyChests\workshop\preview.png"
+	"contentfolder"		"C:\Users\kevin\Downloads\Mods\GK2-Sort-To-Nearby-Chests\workshop\content"
+	"previewfile"		"C:\Users\kevin\Downloads\Mods\GK2-Sort-To-Nearby-Chests\workshop\preview.png"
 	"visibility"		"0"
 	"title"		"GK2 Sort To Nearby Chests"
-	"changenote"		"First release."
+	"changenote"		"v1.0.1: sort an open bag (only that bag); fixed the controller tip bar jumping (moving between items, opening a bag) and the LT prompt showing twice next to No More Running Back; holding LT sorts once; fixed controller focus after switching from mouse"
 	"description"		"Tired of emptying your bag chest by chest?
 One click puts your items into the chests around you that already hold the same items.
 
@@ -15,16 +15,18 @@ One click puts your items into the chests around you that already hold the same 
 [*][b]One-click sorting[/b] from the inventory screen (Character tab), with mouse or controller
 [*][b]Items go where they belong:[/b] into chests that already contain that item, or into storages made for it (like firewood sheds)
 [*][b]Keeps what you need:[/b] tools, hotbar items, the seed in your hand, faith, bags and quest items stay with you
+[*][b]Sort a bag:[/b] open a bag and sort, and only that bag's contents go into the chests
 [*][b]Works like the game:[/b] the button looks and behaves like the game's own move-all button, and items are moved the same way the chest window moves them
 [*][b]Translated[/b] into all the game's languages
 [/list]
 
 [h2]How to use[/h2]
 [list]
-[*][b]Mouse:[/b] click the button on the right of the Inventory header
+[*][b]Mouse:[/b] click the button on the right of the Inventory header (with a bag open: on the bag's header)
 [*][b]Controller:[/b] press [b]LT[/b] on the Character page; the prompt is shown at the end of the tip bar
 [/list]
 The button turns grey when there is nothing to sort or no chest nearby.
+With a bag open, only that bag is sorted. Otherwise only your inventory is sorted and bags keep their contents.
 
 [h2]What gets sorted[/h2]
 [list]
@@ -49,6 +51,7 @@ The button turns grey when there is nothing to sort or no chest nearby.
 [h2]Requirements[/h2]
 [list]
 [*][url=https://github.com/BepInEx/BepInEx/releases/latest]BepInEx 5[/url]
+[*]No other mods needed
 [/list]
 
 [h2]Install[/h2]
@@ -80,5 +83,6 @@ Unsubscribe, and delete [i]BepInEx\plugins\GK2SortToNearbyChests[/i] if you inst
 Made with Claude Opus 5.5. Please report problems in the comments; attach [i]BepInEx\LogOutput.log[/i] if you can.
 
 [h2]Changelog[/h2]
+[b]v1.0.1[/b]: sort an open bag (only that bag); fixed the controller tip bar jumping (moving between items, opening a bag) and the LT prompt showing twice next to No More Running Back; holding LT sorts once; fixed controller focus after switching from mouse
 [b]v1.0.0[/b]: first release"
 }
