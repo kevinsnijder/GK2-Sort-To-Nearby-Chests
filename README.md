@@ -66,7 +66,7 @@ Requires [BepInEx 5](https://github.com/BepInEx/BepInEx/releases/latest). No oth
          └─ GK2SortToNearbyChests
             └─ GK2SortToNearbyChests.dll
    ```
-2. Start the game. `BepInEx/LogOutput.log` should contain `GK2 Sort To Nearby Chests 1.0.2 loaded`
+2. Start the game. `BepInEx/LogOutput.log` should contain `GK2 Sort To Nearby Chests 1.0.3 loaded`
 
 **Uninstall:** delete `BepInEx/plugins/GK2SortToNearbyChests`, and optionally `BepInEx/config/gk2.sorttonearbychests.cfg`.
 
@@ -98,6 +98,9 @@ Tested with [No More Running Back](https://steamcommunity.com/sharedfiles/filede
 No More Running Back is optional. When it's installed, the LT prompt comes after its own prompts, and its record of the tip bar text is kept up to date so its prompts aren't repeated. When the game rewrites the tip bar late in a frame (opening a bag, for example), this mod runs that mod's tip update right away, so the bar doesn't jump a frame later. That mod switches itself off when another mod patches its code, so this mod only reads and sets one of its values and calls its tip update.
 
 ## Changelog
+
+**1.0.3**
+- Fixed the log filling up with "Cannot find icon for GameKey [PrevSubTab]" errors (hundreds per second) when playing with mouse and keyboard after opening the inventory. The mod now only looks up the LT icon while the controller prompt is shown.
 
 **1.0.2**
 - Fixed the controller losing its selection in the inventory (no selector, nothing could be selected) on some saves. An error in the mod while the inventory was drawn stopped the game from setting the controller focus.

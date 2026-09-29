@@ -81,6 +81,7 @@ Delete [i]BepInEx\plugins\GK2SortToNearbyChests[/i].
 Please report problems in the comments; attach [i]BepInEx\LogOutput.log[/i] or the game's [i]Player.log[/i] (in %USERPROFILE%\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper 2) if you can.
 
 [size=4][b]Changelog[/b][/size]
+[b]v1.0.3[/b]: fixed the log filling up with "Cannot find icon for GameKey [PrevSubTab]" errors when playing with mouse and keyboard after opening the inventory
 [b]v1.0.2[/b]: fixed the controller losing its selection in the inventory (no selector, nothing selectable) when the mod ran into an unexpected storage or item; such problems are now skipped and logged with details
 [b]v1.0.1[/b]: sort an open bag (only that bag); fixed the controller tip bar jumping (moving between items, opening a bag) and the LT prompt showing twice next to No More Running Back; holding LT sorts once; fixed controller focus after switching from mouse
 [b]v1.0.0[/b]: first release

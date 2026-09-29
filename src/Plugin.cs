@@ -16,7 +16,7 @@ namespace GK2SortToNearbyChests
 	{
 		public const string PluginGuid = "gk2.sorttonearbychests";
 		public const string PluginName = "GK2 Sort To Nearby Chests";
-		public const string PluginVersion = "1.0.2";
+		public const string PluginVersion = "1.0.3";
 
 		internal static ManualLogSource Log;
 

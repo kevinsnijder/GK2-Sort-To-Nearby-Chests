@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using LazyBearTechnology;
@@ -22,12 +23,12 @@ namespace GK2SortToNearbyChests
 		private static readonly AccessTools.FieldRef<LazyButtonTipsStr, TextMeshProUGUI> LabelRef =
 			AccessTools.FieldRefAccess<LazyButtonTipsStr, TextMeshProUGUI>("label");
 
-		private static readonly GameKeyIconType[] ICON_TYPES = { GameKeyIconType.Default, GameKeyIconType.Inactive };
-
 		private static CharacterWindow window;
 		private static CharMainPageWidget page;
 		private static bool subscribed;
 		private static string lastWritten;
+		private static readonly List<string> writtenPrompts = new List<string>();
+		private static readonly Dictionary<int, string> promptCache = new Dictionary<int, string>();
 
 		private static bool notepadResolved;
 		private static FieldInfo notepadInstance;
@@ -39,11 +40,20 @@ namespace GK2SortToNearbyChests
 		{
 			page = mainPage;
 			window = mainPage.GetComponentInParent<CharacterWindow>(true);
+			promptCache.Clear();
 			if (!subscribed)
 			{
 				Canvas.willRenderCanvases += OnWillRenderCanvases;
+				LazyInput.OnInputChanged -= OnInputChanged;
+				LazyInput.OnInputChanged += OnInputChanged;
 				subscribed = true;
 			}
+		}
+
+		/// <summary>The icons depend on the input device; they are looked up again after a switch.</summary>
+		private static void OnInputChanged()
+		{
+			promptCache.Clear();
 		}
 
 		private static void OnWillRenderCanvases()
@@ -80,6 +90,10 @@ namespace GK2SortToNearbyChests
 			var original = label.text ?? string.Empty;
 			var text = RemovePrompts(original);
 			var wanted = ShouldShow() ? Prompt(CurrentIconType()) : null;
+			if (wanted != null && !writtenPrompts.Contains(wanted))
+			{
+				writtenPrompts.Add(wanted);
+			}
 			var result = wanted == null ? text : text + (text.Length > 0 ? SEPARATOR : string.Empty) + wanted;
 			lastWritten = result;
 			if (result == original)
@@ -91,13 +105,15 @@ namespace GK2SortToNearbyChests
 			RedrawNow();
 		}
 
-		/// <summary>Removes this prompt wherever it is; in some redraws it ends up in the middle of the text.</summary>
+		/// <summary>
+		/// Removes the prompts written earlier wherever they are; in some redraws they end up in the middle of the text.
+		/// Uses the written texts, so no icon is looked up while the prompt is hidden.
+		/// </summary>
 		private static string RemovePrompts(string text)
 		{
-			foreach (var iconType in ICON_TYPES)
+			foreach (var prompt in writtenPrompts)
 			{
-				var prompt = Prompt(iconType);
-				if (prompt == null || text.IndexOf(prompt, StringComparison.Ordinal) < 0)
+				if (text.IndexOf(prompt, StringComparison.Ordinal) < 0)
 				{
 					continue;
 				}
@@ -124,14 +140,20 @@ namespace GK2SortToNearbyChests
 			return view != null && view.CanSort ? GameKeyIconType.Default : GameKeyIconType.Inactive;
 		}
 
+		/// <summary>
+		/// The prompt text, or null when the current input device has no icon for LT. Cached: the game logs an error for
+		/// every lookup of a missing icon.
+		/// </summary>
 		private static string Prompt(GameKeyIconType iconType)
 		{
-			var icon = ControllerIconLibrary.GetIconId(CharacterWindowKeysPatch.SortKey, iconType, trailingSpace: false);
-			if (string.IsNullOrEmpty(icon))
+			if (promptCache.TryGetValue(iconType.value, out var cached))
 			{
-				return null;
+				return cached;
 			}
-			return icon + Texts.Button;
+			var icon = ControllerIconLibrary.GetIconId(CharacterWindowKeysPatch.SortKey, iconType, trailingSpace: false);
+			var prompt = string.IsNullOrEmpty(icon) ? null : icon + Texts.Button;
+			promptCache[iconType.value] = prompt;
+			return prompt;
 		}
 
 		/// <summary>
