@@ -5,7 +5,7 @@
 	"contentfolder"		"C:\Users\kevin\Downloads\Mods\GK2-Sort-To-Nearby-Chests\workshop\content"
 	"previewfile"		"C:\Users\kevin\Downloads\Mods\GK2-Sort-To-Nearby-Chests\workshop\preview.png"
 	"visibility"		"0"
-	"title"		"GK2 Sort To Nearby Chests"
+	"title"		"Sort to nearby chests"
 	"changenote"		"v1.0.1: sort an open bag (only that bag); fixed the controller tip bar jumping (moving between items, opening a bag) and the LT prompt showing twice next to No More Running Back; holding LT sorts once; fixed controller focus after switching from mouse"
 	"description"		"Tired of emptying your bag chest by chest?
 One click puts your items into the chests around you that already hold the same items.
@@ -38,7 +38,7 @@ With a bag open, only that bag is sorted. Otherwise only your inventory is sorte
 
 [h2]Compatibility[/h2]
 [list]
-[*]Tested with [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3806668942]No More Running Back[/url], [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3809616755]GK2 Performance[/url], Better Auto Crafting and GK2 Move Stations
+[*]Tested with [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3806668942]No More Running Back[/url], [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3809616755]Performance Fixes[/url], Better Auto Crafting and GK2 Move Stations
 [*]No More Running Back is optional; with it, its controller prompts are kept as they are
 [/list]
 

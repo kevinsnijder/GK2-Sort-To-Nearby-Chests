@@ -1,11 +1,13 @@
 ## ⚠️ AI DISCLAIMER: This project is a vibecoded project.
 I have not doublechecked every line of code in this repository.
 
-# GK2 Sort To Nearby Chests
+# Sort to nearby chests
+
+<img src="workshop/preview.png" alt="Sort to nearby chests" width="160" align="right">
+
+**Download:** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3809824680) · [Nexus Mods](https://www.nexusmods.com/graveyardkeeper2/mods/220)
 
 A BepInEx 5 mod for **Graveyard Keeper 2** that adds a **Sort to nearby chests** button to the inventory screen. One click puts your items into the chests around you that already hold the same items.
-
-[Steam Workshop page](https://steamcommunity.com/sharedfiles/filedetails/?id=3809824680)
 
 ## Features
 
@@ -90,7 +92,7 @@ Requires [BepInEx 5](https://github.com/BepInEx/BepInEx/releases/latest). No oth
 
 ## Compatibility
 
-Tested with [No More Running Back](https://steamcommunity.com/sharedfiles/filedetails/?id=3806668942) (installs `GK2Notepad.dll`), [GK2 Performance](https://steamcommunity.com/sharedfiles/filedetails/?id=3809616755), Better Auto Crafting and GK2 Move Stations.
+Tested with [No More Running Back](https://steamcommunity.com/sharedfiles/filedetails/?id=3806668942) (installs `GK2Notepad.dll`), [Performance Fixes](https://steamcommunity.com/sharedfiles/filedetails/?id=3809616755), Better Auto Crafting and GK2 Move Stations.
 
 No More Running Back is optional. When it's installed, the LT prompt comes after its own prompts, and its record of the tip bar text is kept up to date so its prompts aren't repeated. When the game rewrites the tip bar late in a frame (opening a bag, for example), this mod runs that mod's tip update right away, so the bar doesn't jump a frame later. That mod switches itself off when another mod patches its code, so this mod only reads and sets one of its values and calls its tip update.
 

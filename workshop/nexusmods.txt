@@ -34,7 +34,7 @@ into any nearby chest with room[/*]
 
 [size=4][b]Compatibility[/b][/size]
 [list]
-[*]Tested with [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3806668942]No More Running Back[/url], GK2 Performance,
+[*]Tested with [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3806668942]No More Running Back[/url], [url=https://www.nexusmods.com/graveyardkeeper2/mods/211]Performance Fixes[/url],
 Better Auto Crafting and GK2 Move Stations[/*]
 [*]No More Running Back is optional; with it installed, its controller prompts stay as they are[/*]
 [/list]
