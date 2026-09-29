@@ -2,11 +2,11 @@
 {
 	"appid"		"4358690"
 	"publishedfileid"		"3809824680"
-	"contentfolder"		"C:\Users\kevin\Downloads\Mods\GK2-Sort-To-Nearby-Chests\workshop\content"
-	"previewfile"		"C:\Users\kevin\Downloads\Mods\GK2-Sort-To-Nearby-Chests\workshop\preview.png"
+	"contentfolder"		"D:\Projects\Persoonlijk\Graveyard Keeper II\Sort To Nearby Chests\workshop\content"
+	"previewfile"		"D:\Projects\Persoonlijk\Graveyard Keeper II\Sort To Nearby Chests\workshop\preview.png"
 	"visibility"		"0"
 	"title"		"Sort to nearby chests"
-	"changenote"		"v1.0.1: sort an open bag (only that bag); fixed the controller tip bar jumping (moving between items, opening a bag) and the LT prompt showing twice next to No More Running Back; holding LT sorts once; fixed controller focus after switching from mouse"
+	"changenote"		"v1.0.2: fixed the controller losing its selection in the inventory (no selector, nothing selectable) when the mod ran into an unexpected storage or item; such problems are now skipped and logged with details in BepInEx\LogOutput.log and the game's Player.log"
 	"description"		"Tired of emptying your bag chest by chest?
 One click puts your items into the chests around you that already hold the same items.
 
@@ -84,9 +84,10 @@ Unsubscribe, and delete [i]BepInEx\plugins\GK2SortToNearbyChests[/i] if you inst
 [*][url=https://www.nexusmods.com/graveyardkeeper2/mods/220]Nexus Mods page[/url]
 [*][url=https://github.com/kevinsnijder/GK2-Sort-To-Nearby-Chests]Source code on GitHub[/url]
 [/list]
-Please report problems in the comments; attach [i]BepInEx\LogOutput.log[/i] if you can.
+Please report problems in the comments; attach [i]BepInEx\LogOutput.log[/i] or the game's [i]Player.log[/i] (in %USERPROFILE%\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper 2) if you can.
 
 [h2]Changelog[/h2]
+[b]v1.0.2[/b]: fixed the controller losing its selection in the inventory (no selector, nothing selectable) when the mod ran into an unexpected storage or item; such problems are now skipped and logged with details
 [b]v1.0.1[/b]: sort an open bag (only that bag); fixed the controller tip bar jumping (moving between items, opening a bag) and the LT prompt showing twice next to No More Running Back; holding LT sorts once; fixed controller focus after switching from mouse
 [b]v1.0.0[/b]: first release"
 }

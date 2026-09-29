@@ -66,7 +66,7 @@ Requires [BepInEx 5](https://github.com/BepInEx/BepInEx/releases/latest). No oth
          └─ GK2SortToNearbyChests
             └─ GK2SortToNearbyChests.dll
    ```
-2. Start the game. `BepInEx/LogOutput.log` should contain `GK2 Sort To Nearby Chests 1.0.1 loaded.`
+2. Start the game. `BepInEx/LogOutput.log` should contain `GK2 Sort To Nearby Chests 1.0.2 loaded`
 
 **Uninstall:** delete `BepInEx/plugins/GK2SortToNearbyChests`, and optionally `BepInEx/config/gk2.sorttonearbychests.cfg`.
 
@@ -89,6 +89,7 @@ Requires [BepInEx 5](https://github.com/BepInEx/BepInEx/releases/latest). No oth
 - The mod adds no data of its own to save files. Items are moved with the game's own inventory calls, so they are saved like any other item.
 - Removing the DLL restores the unmodded game.
 - If a game update breaks one of the mod's patches, the mod removes all of them and the game runs unmodded. The reason is logged in `BepInEx/LogOutput.log`.
+- If the mod runs into something unexpected (an unusual storage or item in a save, for example), it skips that storage or item instead of breaking the game's inventory screen. The error is logged once, with details, in `BepInEx/LogOutput.log` and the game's `Player.log`.
 
 ## Compatibility
 
@@ -97,6 +98,11 @@ Tested with [No More Running Back](https://steamcommunity.com/sharedfiles/filede
 No More Running Back is optional. When it's installed, the LT prompt comes after its own prompts, and its record of the tip bar text is kept up to date so its prompts aren't repeated. When the game rewrites the tip bar late in a frame (opening a bag, for example), this mod runs that mod's tip update right away, so the bar doesn't jump a frame later. That mod switches itself off when another mod patches its code, so this mod only reads and sets one of its values and calls its tip update.
 
 ## Changelog
+
+**1.0.2**
+- Fixed the controller losing its selection in the inventory (no selector, nothing could be selected) on some saves. An error in the mod while the inventory was drawn stopped the game from setting the controller focus.
+- The mod no longer lets its own errors reach the game: a storage or item it can't handle is skipped, and the sort button or LT prompt keeps working for the rest.
+- Errors are logged once, with the mod and game version, the storage or item involved and the full details, in `BepInEx/LogOutput.log` and the game's `Player.log`.
 
 **1.0.1**
 - Sort an open bag: with a bag open, only that bag's contents are sorted. Closed bags keep their contents.

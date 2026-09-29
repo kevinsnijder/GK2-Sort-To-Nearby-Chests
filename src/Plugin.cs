@@ -3,18 +3,20 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using UnityEngine;
 
 namespace GK2SortToNearbyChests
 {
 	/// <summary>
-	/// Adds a "Sort to nearby chests" button to the inventory screen. The mod adds no data of its own to save files.
+	/// Adds a "Sort to nearby chests" button to the inventory screen.
+	/// The mod writes nothing of its own to save files.
 	/// </summary>
 	[BepInPlugin(PluginGuid, PluginName, PluginVersion)]
 	public class Plugin : BaseUnityPlugin
 	{
 		public const string PluginGuid = "gk2.sorttonearbychests";
 		public const string PluginName = "GK2 Sort To Nearby Chests";
-		public const string PluginVersion = "1.0.1";
+		public const string PluginVersion = "1.0.2";
 
 		internal static ManualLogSource Log;
 
@@ -28,7 +30,10 @@ namespace GK2SortToNearbyChests
 
 		private Harmony harmony;
 
-		/// <summary>Loads the settings and applies the patches. If a game update broke a patch, all patches are removed so the game runs unmodded.</summary>
+		/// <summary>
+		/// Loads the settings and applies the patches.
+		/// If a game update broke a patch, all are removed and the game runs unmodded.
+		/// </summary>
 		private void Awake()
 		{
 			Log = Logger;
@@ -41,12 +46,12 @@ namespace GK2SortToNearbyChests
 			}
 			catch (Exception ex)
 			{
-				Log.LogError($"Failed to apply patches, running vanilla. Reason: {ex}");
+				Guard.Report("applying the patches (the mod is switched off)", ex);
 				harmony.UnpatchSelf();
 				return;
 			}
 
-			Log.LogInfo($"{PluginName} {PluginVersion} loaded.");
+			Log.LogInfo($"{PluginName} {PluginVersion} loaded (game {Application.version}).");
 		}
 
 		private void BindConfig()

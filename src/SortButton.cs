@@ -9,8 +9,8 @@ using UnityEngine.UI;
 namespace GK2SortToNearbyChests
 {
 	/// <summary>
-	/// The "Sort to nearby chests" button: a copy of the game's "move all identical items" button on the inventory header.
-	/// Mouse only; with a controller the tip bar shows an LT prompt instead. While a bag is open, its contents are sorted too.
+	/// The "Sort to nearby chests" button, a copy of the game's "move all identical items" button on the inventory header.
+	/// Mouse only; controllers get an LT prompt in the tip bar instead.
 	/// </summary>
 	internal class SortButtonView : MonoBehaviour
 	{
@@ -89,10 +89,7 @@ namespace GK2SortToNearbyChests
 			RestoreTitle();
 		}
 
-		/// <summary>
-		/// On the bag panel the button sits between the title and the close button, so the title is centered in the space
-		/// left between the bag icon and the buttons. Long names end in "...".
-		/// </summary>
+		/// <summary>On the bag panel, centers the title between the bag icon and the buttons. Long names end in "...".</summary>
 		private void SqueezeTitle(InventoryHeaderWidget header)
 		{
 			var title = header.transform.Find("Header")?.GetComponent<TMP_Text>();
@@ -125,17 +122,17 @@ namespace GK2SortToNearbyChests
 		}
 
 		/// <summary>
-		/// Keeps the button on the header of what it sorts (the open bag, else the player's inventory), shows it for mouse
-		/// only, and greys it out when there is nothing to sort.
+		/// Keeps the button on the header of what it sorts, mouse only.
+		/// Greys it out when there is nothing to sort.
 		/// </summary>
 		private void LateUpdate()
 		{
-			Refresh();
+			Guard.Run("the sort button update", Refresh);
 		}
 
 		/// <summary>
-		/// Checking whether anything can be sorted walks every nearby storage, so it runs when the sorted inventory changes or
-		/// a bag opens or closes, and otherwise only every <see cref="REFRESH_INTERVAL_SECONDS"/> for chests that change meanwhile.
+		/// Checking walks every nearby storage, so it runs when the inventory changes or a bag opens or closes,
+		/// and otherwise only every few seconds.
 		/// </summary>
 		private void Refresh()
 		{
@@ -251,7 +248,7 @@ namespace GK2SortToNearbyChests
 			return first.InventoryHeaderWidget;
 		}
 
-		/// <summary>The header of the open bag's panel. The button goes left of the panel's close button.</summary>
+		/// <summary>The header of the open bag's panel. The button goes left of its close button.</summary>
 		private InventoryHeaderWidget FindBagHeader()
 		{
 			var bagWidget = BagWidgetRef(page);
@@ -293,10 +290,7 @@ namespace GK2SortToNearbyChests
 			return true;
 		}
 
-		/// <summary>
-		/// The button is mouse only. The copied template can take controller focus: when the player switches from mouse to
-		/// controller, the game focuses the first target while this copy is still shown, which then hides.
-		/// </summary>
+		/// <summary>Stops the copied button from taking controller focus when switching from mouse to controller.</summary>
 		private static void RemoveControllerNavigation(GameObject copy)
 		{
 			foreach (var navigationItem in copy.GetComponentsInChildren<GamepadNavigationItem>(true))
@@ -336,7 +330,10 @@ namespace GK2SortToNearbyChests
 		private void OnClicked()
 		{
 			HideTooltip();
-			SortActions.SortNow(page);
+			Guard.Run("sorting (button)", () =>
+			{
+				SortActions.SortNow(page);
+			});
 		}
 
 		private void ShowTooltip()
@@ -397,7 +394,7 @@ namespace GK2SortToNearbyChests
 			}
 			catch (Exception ex)
 			{
-				Plugin.Log.LogWarning($"Could not show notification: {ex.Message}");
+				Guard.Report("showing a notification", ex);
 			}
 		}
 	}
@@ -408,8 +405,11 @@ namespace GK2SortToNearbyChests
 		/// <summary>Adds the button and the controller prompt when the inventory page is drawn.</summary>
 		private static void Postfix(CharMainPageWidget __instance)
 		{
-			SortButtonView.Get(__instance).RefreshNow();
-			TipBarPrompt.Track(__instance);
+			Guard.Run("the inventory page redraw", () =>
+			{
+				SortButtonView.Get(__instance).RefreshNow();
+				TipBarPrompt.Track(__instance);
+			});
 		}
 	}
 
@@ -419,15 +419,14 @@ namespace GK2SortToNearbyChests
 		/// <summary>Takes the button off the inventory header before the game recycles the header.</summary>
 		private static void Prefix(CharMainPageWidget __instance)
 		{
-			SortButtonView.Find(__instance)?.Park();
+			Guard.Run("closing the inventory page", () =>
+			{
+				SortButtonView.Find(__instance)?.Park();
+			});
 		}
 	}
 
-	/// <summary>
-	/// Controller: LT sorts to nearby chests on the inventory page, once per press (a held or drifting trigger would otherwise
-	/// sort again at the game's key-repeat rate). The game only uses LT to switch sub-tabs on the Tech Tree and Inspirations
-	/// pages, which keep that behaviour.
-	/// </summary>
+	/// <summary>Controller: LT sorts once per press on the inventory page. Other pages keep the game's LT behaviour.</summary>
 	[HarmonyPatch(typeof(CharacterWindow), "GetGameKeyDelegates")]
 	internal static class CharacterWindowKeysPatch
 	{
@@ -446,7 +445,12 @@ namespace GK2SortToNearbyChests
 			var window = __instance;
 			__result[SortKey] = () =>
 			{
-				if (TrySort(window))
+				var sorted = false;
+				Guard.Run("sorting (LT)", () =>
+				{
+					sorted = TrySort(window);
+				});
+				if (sorted)
 				{
 					return true;
 				}

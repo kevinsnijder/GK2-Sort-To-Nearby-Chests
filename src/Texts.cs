@@ -4,8 +4,8 @@ using LazyBearTechnology;
 namespace GK2SortToNearbyChests
 {
 	/// <summary>
-	/// The mod's few UI strings in the game's languages. <c>LLBase.L</c> returns unknown ids unchanged, so these
-	/// finished strings can be handed to the game's tooltip, tip bar and notification code as they are.
+	/// The mod's UI strings in the game's languages. The game's text lookup returns unknown ids unchanged,
+	/// so these strings can be passed to its tooltip, tip bar and notification code as they are.
 	/// </summary>
 	internal static class Texts
 	{

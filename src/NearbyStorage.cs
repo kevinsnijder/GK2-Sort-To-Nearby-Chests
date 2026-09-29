@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,73 +7,97 @@ namespace GK2SortToNearbyChests
 	/// <summary>Finds the storages the player's items may be sorted into.</summary>
 	internal static class NearbyStorage
 	{
-		/// <summary>
-		/// Inside a storage area: every storage of that area (the same list the inventory screen shows under the
-		/// player's inventory). Outside one: storages of the current scene within <see cref="Plugin.NearbyRadius"/>.
-		/// Nearest first.
-		/// </summary>
+		private struct Found
+		{
+			public float Distance;
+			public Inventory Inventory;
+			public string Name;
+		}
+
+		private static readonly Dictionary<Inventory, string> names = new Dictionary<Inventory, string>();
+
+		/// <summary>In a storage area: all storages of that area. Outside one: storages within NearbyRadius. Nearest first.</summary>
 		internal static List<Inventory> Find(PlayerData playerData)
 		{
 			var playerPos = MainGame.PlayerController.MovablePosition;
-			var found = new List<KeyValuePair<float, Inventory>>();
+			var found = new List<Found>();
 			var zone = playerData.CurrentWorldZoneData;
 			if (zone != null)
 			{
 				var worldData = MainGame.Instance.GameSave.worldData;
 				foreach (var guid in zone.wgoDataList)
 				{
-					var wgoData = worldData.GetWgoData(guid);
-					if (IsUsableStorage(wgoData))
-					{
-						found.Add(new KeyValuePair<float, Inventory>(Vector3.Distance(wgoData.Position, playerPos), wgoData.Inventory));
-					}
+					TryAdd(worldData.GetWgoData(guid), playerPos, float.MaxValue, found);
 				}
 			}
 			else
 			{
 				var scene = MainGame.Instance.GameSave.WorldData.GetGameSceneDataById(playerData.currentGameSceneId);
-				var radius = Plugin.NearbyRadius.Value;
 				if (scene != null)
 				{
+					var radius = Plugin.NearbyRadius.Value;
 					foreach (var wgoData in scene.wgoDataList)
 					{
-						if (!IsUsableStorage(wgoData))
-						{
-							continue;
-						}
-						var distance = Vector3.Distance(wgoData.Position, playerPos);
-						if (distance <= radius)
-						{
-							found.Add(new KeyValuePair<float, Inventory>(distance, wgoData.Inventory));
-						}
+						TryAdd(wgoData, playerPos, radius, found);
 					}
 				}
 			}
 
-			found.Sort((a, b) => a.Key.CompareTo(b.Key));
+			found.Sort((a, b) => a.Distance.CompareTo(b.Distance));
+			names.Clear();
 			var result = new List<Inventory>(found.Count);
-			foreach (var pair in found)
+			foreach (var storage in found)
 			{
-				if (pair.Value != null && pair.Value != playerData.inventory && !result.Contains(pair.Value))
+				if (storage.Inventory != playerData.inventory && !result.Contains(storage.Inventory))
 				{
-					result.Add(pair.Value);
+					result.Add(storage.Inventory);
+					names[storage.Inventory] = storage.Name;
 				}
 			}
 			return result;
 		}
 
+		/// <summary>The storage's object id and unique id, for log messages.</summary>
+		internal static string Describe(Inventory inventory)
+		{
+			return inventory != null && names.TryGetValue(inventory, out var name) ? name : "(unknown storage)";
+		}
+
+		/// <summary>Adds the storage when it is usable and in range. A storage that fails the check is skipped and logged.</summary>
+		private static void TryAdd(WgoData wgoData, Vector3 playerPos, float radius, List<Found> found)
+		{
+			if (wgoData == null)
+			{
+				return;
+			}
+			try
+			{
+				if (!IsUsableStorage(wgoData))
+				{
+					return;
+				}
+				var distance = Vector3.Distance(wgoData.Position, playerPos);
+				var inventory = wgoData.Inventory;
+				if (distance > radius || inventory == null || inventory.Data == null || inventory.Data.Inventory == null)
+				{
+					return;
+				}
+				found.Add(new Found { Distance = distance, Inventory = inventory, Name = NameOf(wgoData) });
+			}
+			catch (Exception ex)
+			{
+				Guard.Report($"checking storage {NameOf(wgoData)}", ex);
+			}
+		}
+
 		/// <summary>
-		/// Uses the game's own rule for storages listed in the inventory screen (chests, sheds, pallets), which leaves out
-		/// crafting stations, NPCs and graves. Conveyor storages only when enabled.
+		/// Uses the game's own rule for storages shown in the inventory screen (chests, sheds, pallets).
+		/// Conveyor storages only when enabled.
 		/// </summary>
 		private static bool IsUsableStorage(WgoData wgoData)
 		{
-			if (wgoData == null || wgoData.Definition == null)
-			{
-				return false;
-			}
 			var definition = wgoData.Definition;
-			if (definition.inventorySize == 0 || !definition.OpenInMultiInventory)
+			if (definition == null || definition.inventorySize == 0 || !definition.OpenInMultiInventory)
 			{
 				return false;
 			}
@@ -81,6 +106,18 @@ namespace GK2SortToNearbyChests
 				return false;
 			}
 			return true;
+		}
+
+		private static string NameOf(WgoData wgoData)
+		{
+			try
+			{
+				return $"'{wgoData.id}' ({wgoData.UniqueId})";
+			}
+			catch (Exception)
+			{
+				return "(unreadable storage)";
+			}
 		}
 	}
 }

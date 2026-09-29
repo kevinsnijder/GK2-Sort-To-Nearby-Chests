@@ -8,8 +8,8 @@ using UnityEngine;
 namespace GK2SortToNearbyChests
 {
 	/// <summary>
-	/// The controller prompt "[LT] Sort to nearby chests" at the end of the Character window's tip bar. It is added just
-	/// before the screen is drawn, after the game and other mods wrote their prompts, so it is always the last one.
+	/// The "[LT] Sort to nearby chests" prompt in the Character window's tip bar.
+	/// It is added just before drawing, after the game and other mods, so it is always last.
 	/// </summary>
 	internal static class TipBarPrompt
 	{
@@ -56,7 +56,7 @@ namespace GK2SortToNearbyChests
 			{
 				Canvas.willRenderCanvases -= OnWillRenderCanvases;
 				subscribed = false;
-				Plugin.Log.LogWarning($"Controller prompt disabled: {ex.Message}");
+				Guard.Report("the controller prompt (switched off until the game restarts)", ex);
 			}
 		}
 
@@ -91,11 +91,7 @@ namespace GK2SortToNearbyChests
 			RedrawNow();
 		}
 
-		/// <summary>
-		/// Removes this prompt wherever it is. When the game rewrites the tip bar outside its input update (an inventory
-		/// redraw, for example), the prompt is added before No More Running Back adds its own prompts after the text, so it
-		/// can end up in the middle.
-		/// </summary>
+		/// <summary>Removes this prompt wherever it is; in some redraws it ends up in the middle of the text.</summary>
 		private static string RemovePrompts(string text)
 		{
 			foreach (var iconType in ICON_TYPES)
@@ -110,10 +106,7 @@ namespace GK2SortToNearbyChests
 			return text;
 		}
 
-		/// <summary>
-		/// The canvases may already be rebuilt this frame with the old text; without this the bar is drawn one frame without
-		/// the prompt. The rebuild raises the render event again, which finds the text unchanged and returns.
-		/// </summary>
+		/// <summary>Rebuilds the canvases now, so the bar isn't drawn for one frame without the prompt.</summary>
 		private static void RedrawNow()
 		{
 			Canvas.ForceUpdateCanvases();
@@ -142,9 +135,8 @@ namespace GK2SortToNearbyChests
 		}
 
 		/// <summary>
-		/// The game sometimes rewrites the tip bar after No More Running Back added its prompts for the frame (opening a bag,
-		/// for example). That mod would add them one frame later, in front of this prompt, so the bar jumps. Its own tip update
-		/// is run now instead; it does nothing when its prompts are already there.
+		/// When the game rewrites the tip bar after No More Running Back added its prompts, that mod would add them again
+		/// a frame later and the bar jumps. Its tip update is run now instead.
 		/// </summary>
 		private static void UpdateNotepadNow()
 		{
@@ -164,14 +156,13 @@ namespace GK2SortToNearbyChests
 			catch (Exception ex)
 			{
 				notepadUpdate = null;
-				Plugin.Log.LogWarning($"Could not update No More Running Back's prompts: {ex.InnerException?.Message ?? ex.Message}");
+				Guard.Report("updating No More Running Back's prompts (no longer tried)", ex.InnerException ?? ex);
 			}
 		}
 
 		/// <summary>
-		/// The "No More Running Back" Workshop mod (GK2Notepad) adds its own prompts and remembers the text it wrote; if the
-		/// text changed, it adds them again. Its copy is updated to include this prompt, so they are not repeated. Does nothing
-		/// without that mod. It switches itself off when its code is patched, so it is only read, written and called.
+		/// No More Running Back remembers the tip bar text it wrote and adds its prompts again when it changes.
+		/// Its copy is updated to include this prompt, so nothing is repeated. Does nothing without that mod.
 		/// </summary>
 		private static void SyncNotepad(TextMeshProUGUI label, string before, string after)
 		{
@@ -190,7 +181,7 @@ namespace GK2SortToNearbyChests
 			}
 		}
 
-		/// <summary>Looks up that mod's tip bar fields once. False when the mod is not installed.</summary>
+		/// <summary>Looks up No More Running Back's tip bar fields once. False when it isn't installed.</summary>
 		private static bool ResolveNotepad()
 		{
 			if (notepadResolved)
