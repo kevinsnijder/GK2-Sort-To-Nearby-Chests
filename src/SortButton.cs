@@ -426,12 +426,13 @@ namespace GK2SortToNearbyChests
 		}
 	}
 
-	/// <summary>Controller: LT sorts once per press on the inventory page. Other pages keep the game's LT behaviour.</summary>
+	/// <summary>
+	/// Controller: the chosen button (LT by default) sorts once per press on the inventory page. Other pages keep the game's
+	/// behaviour. Every button that can be chosen is hooked, so changing the setting works without reopening the window.
+	/// </summary>
 	[HarmonyPatch(typeof(CharacterWindow), "GetGameKeyDelegates")]
 	internal static class CharacterWindowKeysPatch
 	{
-		internal static readonly GameKey SortKey = GameKey.PrevSubTab;
-
 		private static readonly AccessTools.FieldRef<CharacterWindow, CharMainPageWidget> MainPageRef =
 			AccessTools.FieldRefAccess<CharacterWindow, CharMainPageWidget>("mainPageWidget");
 
@@ -441,15 +442,25 @@ namespace GK2SortToNearbyChests
 			{
 				return;
 			}
-			__result.TryGetValue(SortKey, out var original);
-			var window = __instance;
-			__result[SortKey] = () =>
+			foreach (var key in SortKeys.ButtonKeys)
+			{
+				Hook(__instance, __result, key);
+			}
+		}
+
+		private static void Hook(CharacterWindow window, Dictionary<GameKey, Func<bool>> delegates, GameKey key)
+		{
+			delegates.TryGetValue(key, out var original);
+			delegates[key] = () =>
 			{
 				var sorted = false;
-				Guard.Run("sorting (LT)", () =>
+				if (key == SortKeys.ControllerKey)
 				{
-					sorted = TrySort(window);
-				});
+					Guard.Run("sorting (controller)", () =>
+					{
+						sorted = TrySort(window, key);
+					});
+				}
 				if (sorted)
 				{
 					return true;
@@ -458,7 +469,7 @@ namespace GK2SortToNearbyChests
 			};
 		}
 
-		private static bool TrySort(CharacterWindow window)
+		private static bool TrySort(CharacterWindow window, GameKey key)
 		{
 			if (!LazyInput.IsGamepadActive || !window.IsShownAndTop || window.LastOpenedPage != CharacterWindowData.CharPage.Main)
 			{
@@ -469,7 +480,7 @@ namespace GK2SortToNearbyChests
 			{
 				return false;
 			}
-			LazyInput.WaitForRelease(SortKey);
+			LazyInput.WaitForRelease(key);
 			SortActions.SortNow(page);
 			return true;
 		}

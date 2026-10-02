@@ -23,13 +23,13 @@ A BepInEx 5 mod for **Graveyard Keeper 2** that adds a **Sort to nearby chests**
 | Input | Action |
 |---|---|
 | Mouse | Click the button on the right of the **Inventory** header (with a bag open: on the bag's header) |
-| Controller | Press **LT** on the Character page. The prompt appears at the end of the tip bar |
+| Controller | Press **LT** on the Character page (RT or pressing a stick can be set with `ControllerButton`). The prompt appears at the end of the tip bar |
 
 The button turns grey (the LT icon dims) when there is nothing to sort or no chest nearby. The result shows up as a normal game notification.
 
 **Bags:** with no bag open, only your inventory is sorted and bags keep their contents. With a bag open, only that bag is sorted; the button then sits on the bag's header, next to its close button. LT works the same way.
 
-LT is otherwise unused on the Character page. On the Tech Tree and Inspirations pages it still switches sub-tabs.
+**Controller button:** `ControllerButton` in the settings picks the button: `LT` (default), `RT`, `LStick` (press the left stick), `RStick` (press the right stick) or `None` (no controller button; the mouse button still works). Only buttons the Character page doesn't use otherwise can be chosen. On the Tech Tree and Inspirations pages, LT and RT still switch sub-tabs.
 
 ## What gets sorted
 
@@ -66,7 +66,7 @@ Requires [BepInEx 5](https://github.com/BepInEx/BepInEx/releases/latest). No oth
          └─ GK2SortToNearbyChests
             └─ GK2SortToNearbyChests.dll
    ```
-2. Start the game. `BepInEx/LogOutput.log` should contain `GK2 Sort To Nearby Chests 1.0.3 loaded`
+2. Start the game. `BepInEx/LogOutput.log` should contain `GK2 Sort To Nearby Chests 1.1.0 loaded`
 
 **Uninstall:** delete `BepInEx/plugins/GK2SortToNearbyChests`, and optionally `BepInEx/config/gk2.sorttonearbychests.cfg`.
 
@@ -83,6 +83,7 @@ Requires [BepInEx 5](https://github.com/BepInEx/BepInEx/releases/latest). No oth
 | `MoveQuestItems` | `false` | Also move quest items. |
 | `UseConveyorStorages` | `false` | Also use conveyor chests and pallets. |
 | `NearbyRadius` | `10` | Outside a storage area: how far (world units) a chest may be. |
+| `ControllerButton` | `LT` | Controller button that sorts: `LT`, `RT`, `LStick` (press the left stick), `RStick` (press the right stick) or `None`. |
 
 ## Safety
 
@@ -95,9 +96,12 @@ Requires [BepInEx 5](https://github.com/BepInEx/BepInEx/releases/latest). No oth
 
 Tested with [No More Running Back](https://steamcommunity.com/sharedfiles/filedetails/?id=3806668942) (installs `GK2Notepad.dll`), [Performance Fixes](https://steamcommunity.com/sharedfiles/filedetails/?id=3809616755), Better Auto Crafting and GK2 Move Stations.
 
-No More Running Back is optional. When it's installed, the LT prompt comes after its own prompts, and its record of the tip bar text is kept up to date so its prompts aren't repeated. When the game rewrites the tip bar late in a frame (opening a bag, for example), this mod runs that mod's tip update right away, so the bar doesn't jump a frame later. That mod switches itself off when another mod patches its code, so this mod only reads and sets one of its values and calls its tip update.
+No More Running Back is optional. When it's installed, the sort prompt comes after its own prompts, and its record of the tip bar text is kept up to date so its prompts aren't repeated. When the game rewrites the tip bar late in a frame (opening a bag, for example), this mod runs that mod's tip update right away, so the bar doesn't jump a frame later. That mod switches itself off when another mod patches its code, so this mod only reads and sets one of its values and calls its tip update.
 
 ## Changelog
+
+**1.1.0**
+- New setting `ControllerButton`: choose which controller button sorts. `LT` (default), `RT`, `LStick` (press the left stick), `RStick` (press the right stick) or `None`. The tip bar prompt shows the chosen button.
 
 **1.0.3**
 - Fixed the log filling up with "Cannot find icon for GameKey [PrevSubTab]" errors (hundreds per second) when playing with mouse and keyboard after opening the inventory. The mod now only looks up the LT icon while the controller prompt is shown.

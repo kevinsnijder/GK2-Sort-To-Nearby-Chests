@@ -9,7 +9,7 @@ using UnityEngine;
 namespace GK2SortToNearbyChests
 {
 	/// <summary>
-	/// The "[LT] Sort to nearby chests" prompt in the Character window's tip bar.
+	/// The "[LT] Sort to nearby chests" prompt (or the button chosen in the settings) in the Character window's tip bar.
 	/// It is added just before drawing, after the game and other mods, so it is always last.
 	/// </summary>
 	internal static class TipBarPrompt
@@ -46,12 +46,18 @@ namespace GK2SortToNearbyChests
 				Canvas.willRenderCanvases += OnWillRenderCanvases;
 				LazyInput.OnInputChanged -= OnInputChanged;
 				LazyInput.OnInputChanged += OnInputChanged;
+				Plugin.ControllerButton.SettingChanged += OnButtonChanged;
 				subscribed = true;
 			}
 		}
 
 		/// <summary>The icons depend on the input device; they are looked up again after a switch.</summary>
 		private static void OnInputChanged()
+		{
+			promptCache.Clear();
+		}
+
+		private static void OnButtonChanged(object sender, EventArgs e)
 		{
 			promptCache.Clear();
 		}
@@ -130,8 +136,8 @@ namespace GK2SortToNearbyChests
 
 		private static bool ShouldShow()
 		{
-			return LazyInput.IsGamepadActive && window.IsShownAndTop && window.LastOpenedPage == CharacterWindowData.CharPage.Main
-				&& page.isActiveAndEnabled;
+			return !ReferenceEquals(SortKeys.ControllerKey, null) && LazyInput.IsGamepadActive && window.IsShownAndTop
+				&& window.LastOpenedPage == CharacterWindowData.CharPage.Main && page.isActiveAndEnabled;
 		}
 
 		private static GameKeyIconType CurrentIconType()
@@ -141,7 +147,7 @@ namespace GK2SortToNearbyChests
 		}
 
 		/// <summary>
-		/// The prompt text, or null when the current input device has no icon for LT. Cached: the game logs an error for
+		/// The prompt text, or null when the current input device has no icon for the sort button. Cached: the game logs an error for
 		/// every lookup of a missing icon.
 		/// </summary>
 		private static string Prompt(GameKeyIconType iconType)
@@ -150,7 +156,7 @@ namespace GK2SortToNearbyChests
 			{
 				return cached;
 			}
-			var icon = ControllerIconLibrary.GetIconId(CharacterWindowKeysPatch.SortKey, iconType, trailingSpace: false);
+			var icon = SortKeys.IconText(SortKeys.ControllerKey, iconType);
 			var prompt = string.IsNullOrEmpty(icon) ? null : icon + Texts.Button;
 			promptCache[iconType.value] = prompt;
 			return prompt;

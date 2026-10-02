@@ -1,6 +1,8 @@
 Tired of emptying your bag chest by chest?
 One click puts your items into the chests around you that already hold the same items.
 
+👍 [b]Enjoying the mod? Please endorse it![/b] Endorsements help other players find it.
+
 [size=4][b]Features[/b][/size]
 [list]
 [*][b]One-click sorting[/b] from the inventory screen (Character tab), with mouse or controller[/*]
@@ -16,7 +18,7 @@ chest window moves them[/*]
 [size=4][b]How to use[/b][/size]
 [list]
 [*][b]Mouse:[/b] click the button on the right of the Inventory header (with a bag open: on the bag's header)[/*]
-[*][b]Controller:[/b] press [b]LT[/b] on the Character page; the prompt is shown at the end of the tip bar[/*]
+[*][b]Controller:[/b] press [b]LT[/b] on the Character page; the prompt is shown at the end of the tip bar (RT or pressing a stick can be chosen in the settings)[/*]
 [/list]
 The button turns grey when there is nothing to sort or no chest nearby.
 With a bag open, only that bag is sorted. Otherwise only your inventory is sorted and bags keep their contents.
@@ -66,12 +68,16 @@ Graveyard Keeper 2
 [size=4][b]Configuration[/b][/size]
 [list]
 [*][i]BepInEx\config\gk2.sorttonearbychests.cfg[/i] is created on first start[/*]
-[*]Choose what stays in your inventory, the search radius, overflow and conveyor use[/*]
+[*]Choose what stays in your inventory, the search radius, overflow and conveyor use, and the controller button (LT, RT, LStick, RStick or None)[/*]
 [*]Changes apply after restarting the game[/*]
 [/list]
 
 [size=4][b]Uninstall[/b][/size]
 Delete [i]BepInEx\plugins\GK2SortToNearbyChests[/i].
+
+[size=4][b]Also check out my other mod[/b][/size]
+[url=https://www.nexusmods.com/graveyardkeeper2/mods/211][img]https://images.steamusercontent.com/ugc/16265692176235575631/A9543EDE6707A1DE5EB8F960CF6BD3FC0FE81DE1/?imw=128&imh=128&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false[/img][/url]
+[url=https://www.nexusmods.com/graveyardkeeper2/mods/211][b]Performance Fixes[/b][/url]: less stutter while walking, no freeze on doors, an instant pause menu and a higher frame rate outdoors.
 
 [size=4][b]Links[/b][/size]
 [list]
@@ -81,6 +87,7 @@ Delete [i]BepInEx\plugins\GK2SortToNearbyChests[/i].
 Please report problems in the comments; attach [i]BepInEx\LogOutput.log[/i] or the game's [i]Player.log[/i] (in %USERPROFILE%\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper 2) if you can.
 
 [size=4][b]Changelog[/b][/size]
+[b]v1.1.0[/b]: new setting ControllerButton: choose which controller button sorts (LT, RT, pressing the left or right stick, or none)
 [b]v1.0.3[/b]: fixed the log filling up with "Cannot find icon for GameKey [PrevSubTab]" errors when playing with mouse and keyboard after opening the inventory
 [b]v1.0.2[/b]: fixed the controller losing its selection in the inventory (no selector, nothing selectable) when the mod ran into an unexpected storage or item; such problems are now skipped and logged with details
 [b]v1.0.1[/b]: sort an open bag (only that bag); fixed the controller tip bar jumping (moving between items, opening a bag) and the LT prompt showing twice next to No More Running Back; holding LT sorts once; fixed controller focus after switching from mouse

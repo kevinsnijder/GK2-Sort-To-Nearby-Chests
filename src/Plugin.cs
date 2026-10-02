@@ -16,7 +16,7 @@ namespace GK2SortToNearbyChests
 	{
 		public const string PluginGuid = "gk2.sorttonearbychests";
 		public const string PluginName = "GK2 Sort To Nearby Chests";
-		public const string PluginVersion = "1.0.3";
+		public const string PluginVersion = "1.1.0";
 
 		internal static ManualLogSource Log;
 
@@ -27,6 +27,7 @@ namespace GK2SortToNearbyChests
 		internal static ConfigEntry<bool> MoveQuestItems;
 		internal static ConfigEntry<bool> UseConveyorStorages;
 		internal static ConfigEntry<float> NearbyRadius;
+		internal static ConfigEntry<string> ControllerButton;
 
 		private Harmony harmony;
 
@@ -82,6 +83,13 @@ namespace GK2SortToNearbyChests
 					"Used only outside a storage area: storages within this many world units of the player count as nearby. " +
 					"Inside an area (home, kitchen, yard...) the storages of that area are used, the same ones the inventory screen lists.",
 					new AcceptableValueRange<float>(1f, 50f)));
+
+			ControllerButton = Config.Bind("Controls", "ControllerButton", SortKeys.DEFAULT_BUTTON,
+				new ConfigDescription(
+					"Controller button that sorts on the Character page: LT, RT, LStick (press the left stick), RStick (press the right stick) " +
+					"or None. Only buttons the Character page doesn't use otherwise can be chosen. On the Tech Tree and Inspirations pages, " +
+					"LT and RT keep switching sub-tabs.",
+					new AcceptableValueList<string>(SortKeys.ButtonNames)));
 		}
 	}
 }
